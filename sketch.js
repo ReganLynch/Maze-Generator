@@ -1,17 +1,15 @@
 
-
-var window_Width = 700
-var window_Height = 700
-
 var rows = 20
 var cols = 20
 
-var cubeWidth = window_Width / rows;
-var cubeHeight = window_Height / cols;
+var cubeWidth = 10
+
+var window_Width = rows * cubeWidth
+var window_Height = cols * cubeWidth
 
 var cubes = []
-var currentCube;
 var stack = []
+var currentCube;
 
 function setup() {
 	createCanvas(window_Width, window_Height);
@@ -19,7 +17,7 @@ function setup() {
 	for(var i = 0; i < rows; i++){
 		cubes[i] = []
 		for(var j = 0; j < cols; j++){
-				cubes[i][j] = new cube(i*cubeWidth, j*cubeHeight, cubeWidth, cubeHeight);
+				cubes[i][j] = new cube(i*cubeWidth, j*cubeWidth, cubeWidth, cubeWidth);
 				cubes[i][j].draw()
 		}
 	}
@@ -75,7 +73,7 @@ function removeWall(currCube, nextCube){
 //returns a list of all unvisited neighbours of a cube
 function getNeighborsOfCube(cube){		//i, j is its row, col position in the cubes[][] array
 	var i = cube.x / cubeWidth;
-	var j = cube.y / cubeHeight;
+	var j = cube.y / cubeWidth;
 	var neighbours = []
 	if(i == 0 && j == 0){  //top left
 		neighbours.push(cubes[i][j+1]);
