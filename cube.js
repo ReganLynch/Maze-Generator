@@ -1,7 +1,5 @@
 // ------------ this defines a cube object ------------------
 
-var rectWidth = 1;
-
 function cube(x, y, w, h){
   this.x = x;
   this.y = y;
@@ -11,14 +9,14 @@ function cube(x, y, w, h){
   this.visited = false;
   this.isCurrent = false;
 
-  this.hasTop = true;
-  this.hasRight = true;
-  this.hasBottom = true;
-  this.hasLeft = true;
+  //check if this cube is on a border
+  if(this.x == 0 || this.y == 0 || this.x == width - this.w || this.y == height - this.h){
+    this.visited = true
+  }
 
   this.draw = function(){
     this.drawRect();
-    this.drawSides();
+    // this.drawSides();
   }
 
   this.setCurrent = function(){
@@ -31,30 +29,16 @@ function cube(x, y, w, h){
     if (this.isCurrent){
       fill(50, 200, 50);
     }else if (this.visited){
-      fill(200, 120, 250);
+      //if its on a border
+      if(this.x == 0 || this.y == 0 || this.x == width - this.w || this.y == height - this.h){
+        fill(0, 0, 0);
+      }else{
+        fill(255, 255, 255);
+      }
     }else{
-      fill(50, 100, 200);
+      fill(0, 0, 0);
     }
     rect(this.x, this.y, this.w, this.h);
   }
 
-  this.drawSides = function(){
-    noStroke();
-    if(this.hasTop){
-      fill(255)
-      rect(this.x, this.y, this.w, rectWidth);
-    }
-    if(this.hasRight){
-      fill(255)
-      rect(this.x + this.w - rectWidth, this.y, rectWidth, this.h);
-    }
-    if(this.hasBottom){
-      fill(255)
-      rect(this.x, this.y + this.h - rectWidth, this.w, rectWidth);
-    }
-    if(this.hasLeft){
-      fill(255)
-      rect(this.x, this.y, rectWidth, this.h);
-    }
-  }
 }
