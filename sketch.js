@@ -1,11 +1,11 @@
 
-var cubeWidth = 20 
+var cubeWidth = 10
 
-var rows = 10
-var cols = 10
+var rows = 30
+var cols = 30
 
-var window_Width = rows * cubeWidth
-var window_Height = cols * cubeWidth
+var window_Width = rows * 2 * cubeWidth + (2*cubeWidth)
+var window_Height = cols * 2 * cubeWidth + (2*cubeWidth)
 
 var cubes = []
 var stack = []
@@ -17,25 +17,28 @@ function setup() {
 	for(var i = 0; i < rows; i++){
 		cubes[i] = []
 		for(var j = 0; j < cols; j++){
-				cubes[i][j] = new cube(i*cubeWidth, j*cubeWidth, cubeWidth, cubeWidth);
+				cubes[i][j] = new cube(i, j, cubeWidth);
 				cubes[i][j].draw()
 		}
 	}
-	cubes[1][1].setCurrent();
-	cubes[1][1].draw();
-	currentCube = cubes[1][1];
+	cubes[0][0].setCurrent();
+	cubes[0][0].draw();
+	currentCube = cubes[0][0];
 }
 
 function draw() {
-	var neighbours = getValidNeighboursOfCube(currentCube);
+	var neighbours = getAllUnvisitedNeighboursOfCube(currentCube);
+
 	if(neighbours.length > 0){
 		var randInd = Math.floor(Math.random() * neighbours.length);
 		var nextCube = neighbours[randInd];
 		//2
 		stack.push(currentCube);
+		//remove wall between current cube and next cube
+		removeWall(currentCube, nextCube);
 		//3
 		currentCube.isCurrent = false;
-		currentCube.draw()
+		currentCube.draw();
 		nextCube.setCurrent();
 		currentCube = nextCube;
 		currentCube.draw();
@@ -55,62 +58,54 @@ function draw() {
 	}
 }
 
-//returns a list of all valid Neighbours of a cube
-function getValidNeighboursOfCube(cube){
-	var validNeighbours = [];
-	var allCubeNeighbours = getAllNeighboursOfCube(cube);
-	//if a Neighbour of the current cube
-	for(var i = 0; i < allCubeNeighbours.length; i++){
-		//check that we havent been to this neighbour
-		if(!allCubeNeighbours[i].visited){
-			neighboursOfNeighbor = getAllNeighboursOfCube(allCubeNeighbours[i]);
-			//count the number of visited neighbours of the current neighbour
-			var currNeighbourNumVisitedNeighbours = 0;
-			for(var j = 0; j < neighboursOfNeighbor.length; j++){
-				if(neighboursOfNeighbor[j].visited){
-					currNeighbourNumVisitedNeighbours++;
-				}
-			}
-			//
-			if(currNeighbourNumVisitedNeighbours < 2){
-				validNeighbours.push(allCubeNeighbours[i]);
-			}
-		}
+function removeWall(currCube, nextCube){
+	//find out the remative positions of the cubes to eachother
+	if(currCube.x == nextCube.x - 1){ //if next is to the right
+		currCube.hasRight = false;
+		nextCube.hasLeft = false;
+	}else if(currCube.x == nextCube.x + 1){	//if next cube is to the left
+		currCube.hasLeft = false;
+		nextCube.hasRight = false;
+	}else if (currCube.y == nextCube.y + 1){ //if next cube is on top
+		currCube.hasTop = false;
+		nextCube.hasBottom = false;
+	}else{ //if next cube is on bottom
+		currCube.hasBottom = false;
+		nextCube.hasTop = false;
 	}
-	return validNeighbours;
 }
 
 //returns a list of all Neighbours of a cube
-function getAllNeighboursOfCube(cube){		//i, j is its row, col position in the cubes[][] array
-	var i = cube.x / cubeWidth;
-	var j = cube.y / cubeWidth;
+function getAllUnvisitedNeighboursOfCube(cube){		//i, j is its row, col position in the cubes[][] array
+	var i = cube.x;
+	var j = cube.y;
 	var neighbours = []
 
-	if(i == 1 && j == 1){  //top left
+	if(i == 0 && j == 0){  //top left
 		neighbours.push(cubes[i][j+1]);
 		neighbours.push(cubes[i+1][j]);
-	}else if(i == rows - 2 && j == 1){ // bottom left
+	}else if(i == rows - 1 && j == 0){ // bottom left
 		neighbours.push(cubes[i-1][j]);
 		neighbours.push(cubes[i][j+1]);
-	}else if(i == 1 && j == cols - 2){	// top right
+	}else if(i == 0 && j == cols - 1){	// top right
 		neighbours.push(cubes[i][j-1]);
 		neighbours.push(cubes[i+1][j]);
-	}else if(i == rows - 2 && j == cols - 2){	//bottom right
+	}else if(i == rows - 1 && j == cols - 1){	//bottom right
 		neighbours.push(cubes[i-1][j]);
 		neighbours.push(cubes[i][j-1]);
-	}else if(i == 1){	//on top
+	}else if(i == 0){	//on top
 		neighbours.push(cubes[i+1][j]);
 		neighbours.push(cubes[i][j+1]);
 		neighbours.push(cubes[i][j-1]);
-	}else if(j == cols - 2){	//on right
+	}else if(j == cols - 1){	//on right
 		neighbours.push(cubes[i][j-1]);
 		neighbours.push(cubes[i-1][j]);
 		neighbours.push(cubes[i+1][j]);
-	}else if(i == rows - 2){ // on bottom
+	}else if(i == rows - 1){ // on bottom
 		neighbours.push(cubes[i-1][j]);
 		neighbours.push(cubes[i][j+1]);
 		neighbours.push(cubes[i][j-1]);
-	}else if(j == 1){ //on left
+	}else if(j == 0){ //on left
 		neighbours.push(cubes[i][j+1]);
 		neighbours.push(cubes[i-1][j]);
 		neighbours.push(cubes[i+1][j]);
@@ -120,5 +115,12 @@ function getAllNeighboursOfCube(cube){		//i, j is its row, col position in the c
 		neighbours.push(cubes[i][j+1]);
 		neighbours.push(cubes[i][j-1]);
 	}
-	return neighbours
+	//return only the unvisited neighbours
+	newNeighbours = []
+	for(var i = 0; i < neighbours.length; i++){
+		if(!neighbours[i].visited){
+			newNeighbours.push(neighbours[i]);
+		}
+	}
+	return newNeighbours
 }
