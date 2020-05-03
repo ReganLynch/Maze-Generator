@@ -1,8 +1,8 @@
 
-var cubeWidth = 10
+var cubeWidth = 40
 
-var rows = 30
-var cols = 30
+var rows = 5
+var cols = 5
 
 var window_Width = rows * 2 * cubeWidth + (2*cubeWidth)
 var window_Height = cols * 2 * cubeWidth + (2*cubeWidth)
@@ -53,9 +53,42 @@ function draw() {
 		//draw the current cube normally
 		currentCube.isCurrent = false;
 		currentCube.draw();
+		//generate a start and end point
+		generateStartAndEnd();
+		//terminate the program
 		console.log("maze is complete");
 		noLoop();
 	}
+}
+
+function generateStartAndEnd(){
+	//get all valid top positions
+	validXPosTop = []
+	for(i = 0; i < rows; i++){
+		validXPosTop.push(cubes[i][0].cellPosX);
+		if(!cubes[i][0].hasRight){
+			validXPosTop.push(cubes[i][0].cellPosX + cubeWidth);
+		}
+	}
+	//select a random top spot
+	randInd = Math.floor(Math.random() * validXPosTop.length);
+	noStroke();
+	fill(255, 255, 255);
+	rect(validXPosTop[randInd], 0, cubeWidth, cubeWidth);
+	//now generate all valid bottom x positions
+	validXPosBottom = []
+	for(i = 0; i < rows; i++){
+		validXPosBottom.push(cubes[i][cols-1].cellPosX);
+		if(!cubes[i][cols-1].hasRight){
+			validXPosBottom.push(cubes[i][cols-1].cellPosX + cubeWidth);
+		}
+	}
+	//select a random xpos on bottom
+	randInd = Math.floor(Math.random() * validXPosBottom.length);
+	noStroke();
+	fill(255, 255, 255);
+	rect(validXPosBottom[randInd], window_Height-cubeWidth*2, cubeWidth, cubeWidth);
+
 }
 
 function removeWall(currCube, nextCube){

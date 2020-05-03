@@ -38,6 +38,12 @@ function cube(x, y, w){
     rect(this.cellPosX, this.cellPosY, this.w, this.w);
   }
 
+  this.highLight = function(){
+    noStroke();
+    fill(0, 0, 255);
+    rect(this.cellPosX, this.cellPosY, this.w, this.w);
+  }
+
   this.drawWalls = function(){
     noStroke();
     fill(0, 0, 0);
