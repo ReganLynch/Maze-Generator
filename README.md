@@ -6,4 +6,4 @@ A javascript program to generate mazes using a depth first search algorithm.
 -Allows the user to save the maze into a .BMP image.
 
 #Interface
-![example mazes](interface.png)
+![](interface.png)
