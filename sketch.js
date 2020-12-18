@@ -108,7 +108,7 @@ function draw() {
 
 		mazeLoop:
 		for(i = 0; i < loopTimes; i++){
-			var neighbours = getAllUnvisitedNeighboursOfCube(currentCube);
+			var neighbours = getAllNeighboursOfCube(currentCube, true);
 
 			if(neighbours.length > 0){
 				var randInd = Math.floor(Math.random() * neighbours.length);
@@ -135,6 +135,7 @@ function draw() {
 				currentCube.isCurrent = false;
 				currentCube.draw();
 				//generate a start and end point
+				generateWallBreaks();
 				generateStartAndEnd();
 				mazeIsComplete = true;
 				break mazeLoop;
@@ -144,35 +145,120 @@ function draw() {
 }
 
 function generateStartAndEnd(){
-	//get all valid top positions
-	validXPosTop = []
-	for(i = 0; i < rows; i++){
-		validXPosTop.push(cubes[i][0].cellPosX);
-		if(!cubes[i][0].hasRight){
-			validXPosTop.push(cubes[i][0].cellPosX + cubeWidth);
+	//get all valid start
+	if(Math.random() <= 0.5){
+		//when creating start pos on top
+		validXPosTop = []
+		for(i = 0; i < rows; i++){
+			validXPosTop.push(cubes[i][0].cellPosX);
+			if(!cubes[i][0].hasRight){
+				validXPosTop.push(cubes[i][0].cellPosX + cubeWidth);
+			}
 		}
-	}
-	//select a random top spot
-	randInd = Math.floor(Math.random() * validXPosTop.length);
-	noStroke();
-	fill(255, 255, 255);
-	rect(validXPosTop[randInd], 0, cubeWidth, cubeWidth);
-	//now generate all valid bottom x positions
-	validXPosBottom = []
-	for(i = 0; i < rows; i++){
-		validXPosBottom.push(cubes[i][cols-1].cellPosX);
-		if(!cubes[i][cols-1].hasRight){
-			validXPosBottom.push(cubes[i][cols-1].cellPosX + cubeWidth);
+		//select a random top spot
+		randInd = Math.floor(Math.random() * validXPosTop.length);
+		noStroke();
+		fill(255, 255, 255);
+		rect(validXPosTop[randInd], 0, cubeWidth, cubeWidth);
+	//when creating start pos on left
+	}else{
+		validYPosLeftSide = []
+		for(i = 0; i < cols; i++){
+			validYPosLeftSide.push(cubes[0][i].cellPosY);
+			if(!cubes[0][i].hasBottom){
+				validYPosLeftSide.push(cubes[0][i].cellPosY + cubeWidth);
+			}
 		}
+		//select a random top spot
+		randInd = Math.floor(Math.random() * validYPosLeftSide.length);
+		noStroke();
+		fill(255, 255, 255);
+		rect(0, validYPosLeftSide[randInd], cubeWidth, cubeWidth);
 	}
-	//select a random xpos on bottom
-	randInd = Math.floor(Math.random() * validXPosBottom.length);
-	noStroke();
-	fill(255, 255, 255);
-	rect(validXPosBottom[randInd], window_Height-cubeWidth*2, cubeWidth, cubeWidth);
 
+	//-----------------
+	//now generate all valid bottom x positions
+	if(Math.random() <= 0.5){
+		//when creating end position on bottom
+		validXPosBottom = []
+		for(i = 0; i < rows; i++){
+			validXPosBottom.push(cubes[i][cols-1].cellPosX);
+			if(!cubes[i][cols-1].hasRight){
+				validXPosBottom.push(cubes[i][cols-1].cellPosX + cubeWidth);
+			}
+		}
+		//select a random xpos on bottom
+		randInd = Math.floor(Math.random() * validXPosBottom.length);
+		noStroke();
+		fill(255, 255, 255);
+		rect(validXPosBottom[randInd], window_Height-cubeWidth*2, cubeWidth, cubeWidth);
+	//when creating end position on the right side
+	}else{
+		validYPosRight = []
+		for(i = 0; i < cols; i++){
+			validYPosRight.push(cubes[cols-1][i].cellPosY);
+			if(!cubes[cols-1][i].hasBottom){
+				validYPosRight.push(cubes[cols-1][i].cellPosY + cubeWidth);
+			}
+		}
+		//select a random xpos on bottom
+		randInd = Math.floor(Math.random() * validYPosRight.length);
+		noStroke();
+		fill(255, 255, 255);
+		rect( window_Width-cubeWidth*2, validYPosRight[randInd], cubeWidth, cubeWidth);
+	}
 }
 
+//generates breaks in walls, after the inital maze has been created.
+//	this is done to generate alternate paths to solving the maze.
+//		the algorithm used to generate the initial maze only gives one path from start to end.
+function generateWallBreaks(){
+	for(i = 0; i < rows; i++){
+		for(j = 0; j < cols; j++){
+			//only if this cube has 2 or more walls remaining
+			if(cubes[i][j].getNumRemainingWalls(rows, cols) >= 2){
+				//check if we should destroy any walls, based on wall-break-rate (30%)
+				if(Math.random() <= 0.3){
+					//get list of all neighbours
+					neighbours = getAllNeighboursOfCube(cubes[i][j], false);
+					//randomly select on of the neighbours
+					selectedNeighbour = neighbours[Math.floor(Math.random() * neighbours.length)];
+					//while is not a wall between the current cube and the selected neighbour
+					while(!wallExists(cubes[i][j], selectedNeighbour)){
+						//re-select the neighbour until there is a wall between the two neighbours
+						selectedNeighbour = neighbours[Math.floor(Math.random() * neighbours.length)];
+					}
+					//remove the wall between the two neighbours
+					removeWall(cubes[i][j], selectedNeighbour);
+					//redraw the current cube and the selected neighbour
+					cubes[i][j].draw();
+					selectedNeighbour.draw();
+				}
+			}
+		}
+	}
+}
+
+//returns whether or not there is a wall between two cubes
+function wallExists(cube1, cube2){
+	//check the 4 scenarios
+	//	cube2 is above cube1
+	if(cube1.x == cube2.x && cube1.y == cube2.y + 1){
+		return cube1.hasTop && cube2.hasBottom
+	// cube2 is below cube2
+	}else if(cube1.x == cube2.x && cube1.y == cube2.y - 1){
+		return cube1.hasBottom && cube2.hasTop
+	//cube2 is to the left of cube1
+	}else if(cube1.x == cube2.x + 1 && cube1.y == cube2.y){
+		return cube1.hasLeft && cube2.hasRight
+	//cube2 is to the right of cube1
+	}else if(cube1.x == cube2.x - 1 && cube1.y == cube2.y){
+		return cube1.hasRight && cube2.hasLeft
+	}
+	return false;
+}
+
+//removes a wall between two cubes
 function removeWall(currCube, nextCube){
 	//find out the remative positions of the cubes to eachother
 	if(currCube.x == nextCube.x - 1){ //if next is to the right
@@ -191,7 +277,7 @@ function removeWall(currCube, nextCube){
 }
 
 //returns a list of all Neighbours of a cube
-function getAllUnvisitedNeighboursOfCube(cube){		//i, j is its row, col position in the cubes[][] array
+function getAllNeighboursOfCube(cube, onlyUnvisited){		//i, j is its row, col position in the cubes[][] array
 	var i = cube.x;
 	var j = cube.y;
 	var neighbours = []
@@ -235,7 +321,7 @@ function getAllUnvisitedNeighboursOfCube(cube){		//i, j is its row, col position
 	for(var i = 0; i < neighbours.length; i++){
 		if(neighbours[i] === undefined){
 			//do nothing
-		}else if(!neighbours[i].visited){
+		}else if(!neighbours[i].visited || !onlyUnvisited){
 			newNeighbours.push(neighbours[i]);
 		}
 	}

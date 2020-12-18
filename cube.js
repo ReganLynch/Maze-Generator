@@ -37,7 +37,24 @@ function cube(x, y, w){
     }
     rect(this.cellPosX, this.cellPosY, this.w, this.w);
   }
-  
+
+  this.getNumRemainingWalls = function(num_cubes_x, num_cubes_y){
+    wall_count = 0;
+    if(this.hasTop && this.y != 0){
+      wall_count += 1;
+    }
+    if(this.hasBottom && this.y != num_cubes_y - 1){
+      wall_count += 1;
+    }
+    if(this.hasLeft && this.x != 0){
+      wall_count += 1;
+    }
+    if(this.hasRight && this.x != num_cubes_x - 1){
+      wall_count += 1;
+    }
+    return wall_count;
+  }
+
   this.drawWalls = function(){
     noStroke();
     fill(0, 0, 0);
