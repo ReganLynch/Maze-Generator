@@ -70,6 +70,25 @@ function generateNewCubes(){
 	//get the number of rows, columns and the size of the cubes of the maze
 	cols = int(rowsInput.value());
 	rows = int(colsInput.value());
+
+	if(cols < 0){
+		cols = abs(cols);
+	}
+	if(rows < 0){
+		rows = abs(rows);
+	}
+	if(cols == 0){
+		cols = 1;
+	}
+	if(rows == 0){
+		rows = 1;
+	}
+
+	rowsInput.value(cols);
+	colsInput.value(rows);
+
+	// TODO: HANDLE when cols or rows are <= 0
+
 	cubeWidth = int(cubeSizeInput.value());
 	//re-initialize the canvas
 	window_Width = rows * 2 * cubeWidth + (2*cubeWidth);
@@ -79,6 +98,10 @@ function generateNewCubes(){
 	canv.position(200, 50);
 
 	mazeIsComplete = false;
+	//reset cubes
+	cubes = []
+	//reset stack
+	stack = []
 	for(var i = 0; i < rows; i++){
 		cubes[i] = []
 		for(var j = 0; j < cols; j++){
@@ -86,6 +109,7 @@ function generateNewCubes(){
 				cubes[i][j].draw()
 		}
 	}
+
 	//select a random x start point
 	randx = Math.floor(Math.random() * rows);
 	//select a random y start point
@@ -101,7 +125,7 @@ function draw() {
 		loopTimes = 1;
 		if(fpsSlider.value() == maxFPS){
 			//if framerate is maxed out, dont display the maze generation
-			loopTimes = 1000;
+			loopTimes = 10000;
 		}
 		//set the framerate
 		frameRate(fpsSlider.value());
@@ -196,9 +220,9 @@ function generateStartAndEnd(){
 	}else{
 		validYPosRight = []
 		for(i = 0; i < cols; i++){
-			validYPosRight.push(cubes[cols-1][i].cellPosY);
-			if(!cubes[cols-1][i].hasBottom){
-				validYPosRight.push(cubes[cols-1][i].cellPosY + cubeWidth);
+			validYPosRight.push(cubes[rows-1][i].cellPosY);
+			if(!cubes[rows-1][i].hasBottom){
+				validYPosRight.push(cubes[rows-1][i].cellPosY + cubeWidth);
 			}
 		}
 		//select a random xpos on bottom
@@ -209,6 +233,7 @@ function generateStartAndEnd(){
 	}
 }
 
+// TODO: ONLY BREAK WALLS THAT DONT CREATE SINGLE TILES
 //generates breaks in walls, after the inital maze has been created.
 //	this is done to generate alternate paths to solving the maze.
 //		the algorithm used to generate the initial maze only gives one path from start to end.
@@ -282,20 +307,35 @@ function getAllNeighboursOfCube(cube, onlyUnvisited){		//i, j is its row, col po
 	var j = cube.y;
 	var neighbours = []
 
+	//getting neighbours
 	if(i == 0 && j == 0){  //top left
-		neighbours.push(cubes[i][j+1]);
-		neighbours.push(cubes[i+1][j]);
+
+		if(cols > 1){
+			neighbours.push(cubes[i][j+1]);
+		}
+		if(rows > 1){
+			neighbours.push(cubes[i+1][j]);
+		}
+
 	}else if(i == rows - 1 && j == 0){ // bottom left
 		neighbours.push(cubes[i-1][j]);
 		neighbours.push(cubes[i][j+1]);
 	}else if(i == 0 && j == cols - 1){	// top right
 		neighbours.push(cubes[i][j-1]);
+
+		if(rows > 1){
 		neighbours.push(cubes[i+1][j]);
+		}
+
 	}else if(i == rows - 1 && j == cols - 1){	//bottom right
 		neighbours.push(cubes[i-1][j]);
 		neighbours.push(cubes[i][j-1]);
 	}else if(i == 0){	//on top
-		neighbours.push(cubes[i+1][j]);
+
+		if(rows > 1){
+			neighbours.push(cubes[i+1][j]);
+		}
+
 		neighbours.push(cubes[i][j+1]);
 		neighbours.push(cubes[i][j-1]);
 	}else if(j == cols - 1){	//on right
@@ -310,12 +350,14 @@ function getAllNeighboursOfCube(cube, onlyUnvisited){		//i, j is its row, col po
 		neighbours.push(cubes[i][j+1]);
 		neighbours.push(cubes[i-1][j]);
 		neighbours.push(cubes[i+1][j]);
+
 	}else{ // in center
 		neighbours.push(cubes[i+1][j]);
 		neighbours.push(cubes[i-1][j]);
 		neighbours.push(cubes[i][j+1]);
 		neighbours.push(cubes[i][j-1]);
 	}
+
 	//return only the unvisited neighbours
 	newNeighbours = []
 	for(var i = 0; i < neighbours.length; i++){
