@@ -87,12 +87,12 @@ function generateNewCubes(){
 	rowsInput.value(cols);
 	colsInput.value(rows);
 
-	// TODO: HANDLE when cols or rows are <= 0
-
 	cubeWidth = int(cubeSizeInput.value());
 	//re-initialize the canvas
-	window_Width = rows * 2 * cubeWidth + (2*cubeWidth);
-	window_Height = cols * 2 * cubeWidth + (2*cubeWidth);
+	window_Width = rows * 2 * cubeWidth + (cubeWidth);
+	window_Height = cols * 2 * cubeWidth + (cubeWidth);
+
+	console.log('CANVAS DIMS: ', window_Width, window_Height);
 
 	canv = createCanvas(window_Width, window_Height);
 	canv.position(200, 50);
@@ -215,7 +215,7 @@ function generateStartAndEnd(){
 		randInd = Math.floor(Math.random() * validXPosBottom.length);
 		noStroke();
 		fill(255, 255, 255);
-		rect(validXPosBottom[randInd], window_Height-cubeWidth*2, cubeWidth, cubeWidth);
+		rect(validXPosBottom[randInd], window_Height-cubeWidth, cubeWidth, cubeWidth);
 	//when creating end position on the right side
 	}else{
 		validYPosRight = []
@@ -229,7 +229,7 @@ function generateStartAndEnd(){
 		randInd = Math.floor(Math.random() * validYPosRight.length);
 		noStroke();
 		fill(255, 255, 255);
-		rect( window_Width-cubeWidth*2, validYPosRight[randInd], cubeWidth, cubeWidth);
+		rect( window_Width-cubeWidth, validYPosRight[randInd], cubeWidth, cubeWidth);
 	}
 }
 
